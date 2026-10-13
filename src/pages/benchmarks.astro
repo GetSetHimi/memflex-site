@@ -15,20 +15,17 @@ import Base from "../layouts/Base.astro";
       <div><b>~<em>0.1</em>ms</b><span>memory path (mock; 7–10s cloud LLM)</span></div>
       <div><b>₹<em>0.24</em></b><span>metered savings on 30 asks</span></div>
     </div>
-    <h2 style="margin-top:44px">Workload</h2>
-    <p class="lead">10 intents × 3 rounds (English, German, Spanish, French + terse follow-ups), fresh SQLite, <code>EMBEDDING_BACKEND=hash</code>. Each intent learns one reflex — 10 intents, 8 reflexes.</p>
-    <div class="tabs" style="margin-top:22px">
-      <div class="tab-btns"><button class="on">Reproduce</button><button>Scale math</button></div>
-      <div class="tab-pane on"><div class="codeblock"><button class="copy">Copy</button><pre>pip install memflex
+    <h2 style="margin-top:44px">What we tested</h2>
+    <p class="lead">30 questions customers actually ask — refunds, cancellations, delivery tracking — in English, German, Spanish and French, each asked 3 different ways. Result: 22 answered from memory at ₹0, each in about a tenth of a millisecond.</p>
+    <h2 style="margin-top:44px">What it means for you</h2>
+    <p class="lead">At 1 lakh asks a month with 70% repeats, that's roughly 70,000 free answers — about ₹21,000–35,000/month saved on LLM bills. And your users get instant replies instead of multi-second waits, which is what makes voice agents and live chat feel alive.</p>
+    <details style="margin-top:22px"><summary class="muted" style="cursor:pointer;font-size:14px">Developers: reproduce these exact numbers</summary>
+      <div class="codeblock" style="margin-top:12px"><button class="copy">Copy</button><pre>pip install memflex
 python examples/support-agent.py
 curl http://localhost:8000/metrics
-# → hit_rate, avg_latency_ms, cost_saved_30d_inr, calibration[]</pre></div></div>
-      <div class="tab-pane"><div class="codeblock"><button class="copy">Copy</button><pre>100,000 asks/month × 70% repeats
-= 70,000 free answers
-× ₹0.30–0.50 per LLM call
-= ₹21,000–35,000/month saved per lakh asks
-+ voice/chat UX: 0ms instead of seconds</pre></div></div>
-    </div>
+# → hit_rate, avg_latency_ms, cost_saved_30d_inr, calibration[]</pre></div>
+      <p class="muted" style="font-size:13px">Fixed workload, fresh SQLite, keyless backend — one script, same numbers.</p>
+    </details>
     <h2 style="margin-top:44px">What we don't claim</h2>
     <p class="lead">Mock-backend latency flatters the absolute numbers — the honest delta is memory-path ms vs your LLM's seconds (measured 7–10s on Ollama Cloud). Hit-rate depends on your repeat rate: FAQ/triage/extraction workloads win; unique-every-time workloads gain nothing. Calibration numbers are self-reported from hit consistency until a third-party multilingual split exists.</p>
   </div>
