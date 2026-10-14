@@ -20,6 +20,5 @@
 
 ## Docs
 - Full guide: https://memflex.dev/docs
-- Compare (Jev, Mem0, Portkey, GPTCache): https://memflex.dev/compare
-- Benchmarks: https://memflex.dev/benchmarks
+- Compare (Jev, Mem0, Portkey, GPTCache) + measured proof: https://memflex.dev/compare
 - License: Fair Source FSL-1.1 (server), Apache-2.0 (thin client)

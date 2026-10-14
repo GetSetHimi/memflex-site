@@ -1,0 +1,6 @@
+{
+  "redirects": [
+    { "source": "/benchmarks", "destination": "/compare", "permanent": true },
+    { "source": "/benchmarks/", "destination": "/compare", "permanent": true }
+  ]
+}
