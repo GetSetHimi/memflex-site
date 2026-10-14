@@ -155,6 +155,13 @@ const r = await chat.chat.completions.create(&#123;
       <details class="faq rv"><summary>Do I need an API key to start?</summary><p>No. The built-in mock runs the full loop keyless. Plug OpenAI, Claude, Gemini, Ollama or DeepSeek keys when you want real inference.</p></details>
       <details class="faq rv"><summary>Where does my data live?</summary><p>In one SQLite file on your machine. Nothing leaves unless you configure an upstream LLM. Delete any memory anytime.</p></details>
       <details class="faq rv"><summary>What does it cost?</summary><p>Self-hosting is free forever; memory answers cost ₹0 by design. A managed tier comes later. <a href="/pricing">Pricing →</a></p></details>
+      <details class="faq rv"><summary>Day-1 refund was "processing", day-2 it's done — will Memflex lie?</summary><p>No. Time-varying answers (status, ETA, "processing") auto-expire in 1 day. Expired memory is never served — the next ask goes back to the LLM for a fresh verdict and re-learns into the same record.</p></details>
+      <details class="faq rv"><summary>What if I just type "refund??" the next day?</summary><p>You get the same answer. Bare follow-ups expand from your last message, so shorthand resolves to the same conversation — same situation key, same answer.</p></details>
+      <details class="faq rv"><summary>Won't the database fill up?</summary><p>No. Repeats update the same record instead of adding rows — 1 lakh asks of 100 intents is ~100 rows, a few MB. Growth follows variety of questions, not traffic volume.</p></details>
+      <details class="faq rv"><summary>Does that mean extra infra or storage cost?</summary><p>No. The whole memory is one SQLite file (a few MB), no vector-DB server needed. Compare that against the ~70% LLM bill it removes.</p></details>
+      <details class="faq rv"><summary>What do memory answers look like?</summary><p>Three kinds: the exact stored answer, templates with per-request variables (<code>{name}</code> filled from your request context), or typed JSON via output schemas — all with zero LLM calls.</p></details>
+      <details class="faq rv"><summary>Can I control how long a memory lives?</summary><p>Yes. Set TTL per ask, per saved reflex, or edit it anytime from the console's Memory tab (1–365 days). Volatile facts default to 1 day, stable FAQs to 30.</p></details>
+      <details class="faq rv"><summary>Does it work with voice agents?</summary><p>Yes — LiveKit connects via standard OpenAI-protocol streaming (<code>base_url</code> + caller identity), and repeats stream back from memory in milliseconds, which is exactly what turn-taking needs.</p></details>
     </div>
   </div>
 </section>
