@@ -124,6 +124,33 @@ score &lt; 0.65 → llm       # novel: think, distill, save</pre></div></div>
     <div style="margin-top:26px"><a class="btn btn-primary" href="/docs#quickstart">Try it in 5 minutes</a></div>
   </div>
 </section>
+
+<section class="block">
+  <div class="wrap">
+    <span class="eyebrow rv">Objections, answered</span>
+    <h2 class="rv">5 · “Isn’t this just RAG?”</h2>
+    <p class="lead rv">The two objections every engineer raises — with the exact reason they miss the point.</p>
+    <div style="margin-top:26px">
+      <details class="faq rv"><summary>Isn’t this just RAG?</summary><p>RAG is retrieval-augmented <em>generation</em>: every request retrieves chunks, stuffs them into a prompt, and the LLM generates an answer — a call per request, forever. Memflex is a <em>memory</em>, not generation: the LLM answers once (the miss), the finished answer is distilled and stored, and every repeat is served verbatim from SQLite with <b>zero LLM calls</b> — the provider is never even instantiated (<code>reflex/api/routes.py</code>). If there were no LLM step at all, it would be plain vector search; the LLM is amortized to one call per distinct question, not removed.</p></details>
+      <details class="faq rv"><summary>Doesn’t the LLM’s KV / prompt cache already do this?</summary><p>No — they operate on different layers, and only one of them eliminates the call.</p>
+        <div style="padding:0 20px 18px">
+          <table class="spec">
+            <tr><th></th><th>KV / prompt cache</th><th>Memflex</th></tr>
+            <tr><td>Match type</td><td>Token-exact prefix — change one word, language or phrasing = miss</td><td>Semantic — “Refund kab aayega?” and “When will my refund arrive?” hit the same memory</td></tr>
+            <tr><td>LLM call</td><td>Still happens every request (network RTT + rate limits consumed)</td><td>Never instantiated on a hit — 0 calls</td></tr>
+            <tr><td>Output tokens</td><td>Generated at full price every time (the expensive half)</td><td>Zero — the stored answer returns as-is</td></tr>
+            <tr><td>Lifetime</td><td>Minutes to hours; provider evicts at will</td><td>Days to months, TTL-controlled, in your own SQLite file</td></tr>
+            <tr><td>Scope</td><td>One continuing conversation (prefix must be identical)</td><td>Any user, any conversation, cross-session, persistent</td></tr>
+            <tr><td>Latency</td><td>Hundreds of ms (prefill is cheaper, still a full round trip)</td><td>~0–50ms served from local memory</td></tr>
+          </table>
+          <p style="margin:14px 0 0;color:var(--muted);font-size:14.5px">Prompt caching makes the <em>same</em> LLM call cheaper; Memflex <em>eliminates</em> the call. They’re complements — use both.</p>
+        </div>
+      </details>
+      <details class="faq rv"><summary>But the embedding model runs on every query anyway, right?</summary><p>Yes — and that’s exactly the point. Retrieval needs a query vector, so the embedder runs on every ask. It’s local and tiny (~1ms, or keyless hashing in CI) versus an LLM call. Running an embedder is what makes it a <em>memory/cache</em> layer — the same thing GPTCache, Mem0 and every semantic cache do. Embedding is the retrieval half; it doesn’t make the system RAG, because the “generation” half is skipped entirely on hits.</p></details>
+      <details class="faq rv"><summary>So when <em>does</em> the LLM run?</summary><p>Only on novelty: a question memory has never confidently seen. The answer is then distilled into a reflex, so the <em>next</em> time it’s pure memory. Repeat-heavy traffic (support bots, voice agents, FAQs) drifts past 70% memory-served quickly — see the <a href="/compare">comparison</a> and <code>GET /metrics</code> on your own server.</p></details>
+    </div>
+  </div>
+</section>
 <script>
 (function () {
   const API = 'https://memflex.onrender.com';
