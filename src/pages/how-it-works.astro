@@ -151,10 +151,15 @@ score &lt; 0.65 → llm       # novel: think, distill, save</pre></div></div>
     const t0 = performance.now();
     const payload = { user_id: 'try-playground', message: msg, llm: model };
     if (ttl !== null) payload.ttl_days = ttl;
-    let d = null, err = '';
-    for (let attempt = 1; attempt <= 2 && !d; attempt++) {
+    let d = null, err = '', attempt = 0;
+    while (!d && attempt < 10) {
+      attempt++;
       try { d = await postOnce(base, payload); }
-      catch (e) { err = String((e && e.message) || e); await new Promise(r => setTimeout(r, 800)); }
+      catch (e) {
+        err = String((e && e.message) || e);
+        if (attempt === 2) $('tryans').innerHTML = '<span class="muted">Waking up the demo server… (free hosting sleeps when idle — this takes ~30 seconds, hold on)</span>';
+        await new Promise(r => setTimeout(r, attempt < 2 ? 800 : 9000));
+      }
     }
     if (d) {
       const ms = Math.round(performance.now() - t0);
