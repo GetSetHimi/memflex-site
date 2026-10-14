@@ -119,35 +119,15 @@ score &lt; 0.65 → llm       # novel: think, distill, save</pre></div></div>
         <span class="trychip">My delivery?</span>
       </div>
       <div id="tryans" class="tryans" aria-live="polite"><span class="muted">Your answer lands here — with the badge that proves where it came from.</span></div>
-      <div class="muted" style="margin-top:10px;font-size:13px"><span id="trystatus">● checking connection…</span> · <span id="trycount">this page: 0 LLM calls · 0 reflex answers</span></div>
-      <p class="muted" style="font-size:13px;margin-top:10px">This demo talks to a Memflex API — by default one on your own machine (<code>python3 -m reflex.api.app</code>). Mock needs nothing; Gemini needs a server-side key.</p>
-      <details style="margin-top:8px"><summary class="muted" style="cursor:pointer;font-size:13px">Using a hosted API instead?</summary>
-        <div class="askrow" style="margin-top:10px">
-          <input id="tryapi" type="text" value="https://memflex.onrender.com" aria-label="API base URL" />
-        </div>
-        <p class="muted" style="font-size:13px">Paste a public Memflex API URL and the playground talks to that server instead. Saved in this browser only.</p>
-      </details>
+      <p class="muted" style="font-size:13px;margin-top:10px">Live demo — free server, so the first question can take ~30 seconds to wake up. After that, answers are instant.</p>
     </div>
     <div style="margin-top:26px"><a class="btn btn-primary" href="/docs#quickstart">Try it in 5 minutes</a></div>
   </div>
 </section>
 <script>
 (function () {
-  let nLlm = 0, nRef = 0;
+  const API = 'https://memflex.onrender.com';
   const $ = id => document.getElementById(id);
-  const DEFAULT_API = 'https://memflex.onrender.com';
-  function apiBase() {
-    try { return (localStorage.getItem('mx_api') || DEFAULT_API).replace(/\/$/, ''); }
-    catch (e) { return DEFAULT_API; }
-  }
-  try {
-    const saved = localStorage.getItem('mx_api');
-    if (saved && $('tryapi')) $('tryapi').value = saved;
-  } catch (e) {}
-  if ($('tryapi')) $('tryapi').addEventListener('change', () => {
-    try { localStorage.setItem('mx_api', $('tryapi').value.trim()); } catch (e) {}
-    ping(apiBase());
-  });
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
   document.querySelectorAll('.trychip').forEach(c => c.addEventListener('click', () => { $('tryq').value = c.textContent; }));
   async function postOnce(base, payload) {
@@ -158,30 +138,8 @@ score &lt; 0.65 → llm       # novel: think, distill, save</pre></div></div>
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }
-  async function ping(base) {
-    // Connection dot: green = server reachable from YOUR browser, red = not.
-    const dot = $('trystatus');
-    if (!/^https?:\/\//i.test(base)) {
-      dot.innerHTML = '<span style="color:#ffb86b">● bad URL — must start with http(s)://</span>';
-      return false;
-    }
-    dot.innerHTML = '<span style="color:#9d9da8">● checking…</span>';
-    try {
-      const ctl = new AbortController();
-      const t = setTimeout(() => ctl.abort(), 6000);
-      const r = await fetch(base + '/health', { signal: ctl.signal });
-      clearTimeout(t);
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      dot.innerHTML = '<span style="color:#c8ff2e">● connected</span>';
-      return true;
-    } catch (e) {
-      dot.innerHTML = '<span style="color:#ff6b6b">● unreachable — is the server running?</span>';
-      return false;
-    }
-  }
-  ping(apiBase());
   $('trybtn').addEventListener('click', async () => {
-    const base = apiBase();
+    const base = API;
     const msg = $('tryq').value.trim();
     const model = $('trymodel').value;
     const ttlRaw = ($('tryttl').value || '').trim();
@@ -201,8 +159,6 @@ score &lt; 0.65 → llm       # novel: think, distill, save</pre></div></div>
     if (d) {
       const ms = Math.round(performance.now() - t0);
       const isReflex = d.source !== 'llm';
-      if (isReflex) nRef++; else nLlm++;
-      $('trycount').textContent = 'this page: ' + nLlm + ' LLM calls · ' + nRef + ' reflex answers';
       const badge = isReflex
         ? '<span class="trybadge go">REFLEX — memory, ₹0</span>'
         : '<span class="trybadge wait">LLM — thought + memorized</span>';
@@ -212,15 +168,7 @@ score &lt; 0.65 → llm       # novel: think, distill, save</pre></div></div>
         ' · server ' + d.latency_ms + 'ms · browser ' + ms + 'ms</div>' +
         (isReflex ? '' : '<div class="muted" style="font-size:13px">Ask the exact same again — watch it flip to REFLEX.</div>');
     } else {
-      // Diagnose precisely: is the server down, or did /ask itself fail
-      // (e.g. Gemini model without a server-side key → HTTP 502)?
-      let diagnosis = 'server is down or unreachable from your browser — on the public site this usually means no API is running on your machine (start one locally) or you need a hosted API URL (see above)';
-      try {
-        const h = await fetch(base + '/health');
-        if (h.ok) diagnosis = '/ask failed (' + esc(err) + ') — server is up, so check the model: Gemini needs a server-side key, try mock instead';
-      } catch (e) { /* health also failed — server down */ }
-      $('tryans').innerHTML = '<span class="muted">No answer: ' + diagnosis +
-        '. Verify: <code>curl ' + esc(base) + '/health</code></span>';
+      $('tryans').innerHTML = '<span class="muted">No answer — the demo server is probably waking up (free hosting sleeps when idle). Wait ~30 seconds and ask again.</span>';
     }
     btn.disabled = false; btn.textContent = 'Ask';
   });
